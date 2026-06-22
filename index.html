@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kimi + Tianyancha Carousel</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.page {
+  width: 1080px;
+  height: 1440px;
+  position: relative;
+  overflow: hidden;
+  background: #1e1e1e;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #ffffff;
+}
+
+/* Dark textured background using gradient + noise */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.02) 0%, transparent 40%),
+    linear-gradient(135deg, #1a1a1a 0%, #252525 50%, #1e1e1e 100%);
+  z-index: 0;
+}
+
+/* Scattered dots decoration */
+.dot {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+}
+.dot-cyan { background: rgba(0, 206, 209, 0.6); }
+.dot-orange { background: rgba(232, 93, 4, 0.5); }
+.dot-white { background: rgba(255, 255, 255, 0.3); }
+
+/* Dashed corner lines */
+.corner-line {
+  position: absolute;
+  z-index: 1;
+}
+.corner-top-right {
+  top: 80px; right: 60px;
+  width: 180px; height: 180px;
+  border-top: 2px dashed #e85d04;
+  border-right: 2px dashed #e85d04;
+  border-radius: 0 16px 0 0;
+}
+.corner-bottom-right {
+  bottom: 200px; right: 60px;
+  width: 180px; height: 180px;
+  border-bottom: 2px dashed #e85d04;
+  border-right: 2px dashed #e85d04;
+  border-radius: 0 0 16px 0;
+}
+.corner-top-left {
+  top: 200px; left: 60px;
+  width: 100px; height: 100px;
+  border-top: 2px dashed #00ced1;
+  border-left: 2px dashed #00ced1;
+  border-radius: 16px 0 0 0;
+}
+
+/* Badge */
+.badge {
+  position: absolute;
+  top: 60px;
+  left: 60px;
+  z-index: 2;
+  background: linear-gradient(90deg, #00ced1, #e85d04);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* Date */
+.date {
+  position: absolute;
+  top: 66px;
+  right: 60px;
+  z-index: 2;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 2px;
+}
+
+/* Main content area */
+.content {
+  position: relative;
+  z-index: 2;
+  padding: 220px 80px 0 80px;
+}
+
+/* Headline styling */
+.headline {
+  font-size: 84px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 40px;
+}
+
+.headline-small {
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 30px;
+}
+
+/* Cyan underline accent */
+.accent-line {
+  display: inline-block;
+  position: relative;
+}
+.accent-line::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #00ced1;
+  border-radius: 2px;
+}
+
+/* Body text */
+.body-text {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 28px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.85);
+  max-width: 800px;
+  margin-bottom: 20px;
+}
+
+.body-text-sm {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 24px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.8);
+  max-width: 850px;
+}
+
+/* Highlighted text */
+.highlight {
+  background: rgba(0, 206, 209, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #00ced1;
+}
+
+.highlight-orange {
+  background: rgba(232, 93, 4, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #ffaa5c;
+}
+
+/* List styling */
+.data-list {
+  list-style: none;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 26px;
+  line-height: 2;
+  color: rgba(255,255,255,0.85);
+  margin-top: 30px;
+}
+.data-list li::before {
+  content: '·';
+  color: #00ced1;
+  font-weight: bold;
+  margin-right: 16px;
+  font-size: 32px;
+  vertical-align: middle;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin: 40px 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+.timeline-old {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 24px 32px;
+  flex: 1;
+}
+.timeline-new {
+  background: rgba(0, 206, 209, 0.12);
+  border: 1px solid rgba(0, 206, 209, 0.4);
+  border-radius: 12px;
+  padding: 24px 32px;
+  flex: 1;
+}
+.timeline-arrow {
+  font-size: 36px;
+  color: #00ced1;
+}
+.timeline-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+}
+.timeline-value {
+  font-size: 36px;
+  font-weight: 600;
+}
+.timeline-value-new {
+  color: #00ced1;
+}
+
+/* Footer */
+.footer {
+  position: absolute;
+  bottom: 60px;
+  left: 80px;
+  right: 80px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.author-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 40px;
+  padding: 12px 28px;
+}
+
+.author-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ced1, #e85d04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.author-name {
+  font-size: 16px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+
+.author-url {
+  font-size: 16px;
+  color: rgba(255,255,255,0.6);
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Progress bar */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  z-index: 2;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ced1, #e85d04);
+  border-radius: 0 3px 3px 0;
+}
+
+.page-number {
+  position: absolute;
+  bottom: 20px;
+  right: 60px;
+  z-index: 2;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+}
+
+/* CTA specific styling */
+.cta-big {
+  font-size: 72px;
+  line-height: 1.15;
+  margin-bottom: 50px;
+}
+.cta-sub {
+  font-size: 32px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 60px;
+}
+.cta-url {
+  font-size: 28px;
+  color: #00ced1;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Asymmetry window graphic */
+.window-box {
+  display: flex;
+  gap: 20px;
+  margin: 40px 0;
+}
+.window-item {
+  flex: 1;
+  padding: 28px;
+  border-radius: 12px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+.window-now {
+  background: rgba(0, 206, 209, 0.15);
+  border: 1px solid rgba(0, 206, 209, 0.4);
+}
+.window-later {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.window-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.window-now .window-title { color: #00ced1; }
+.window-later .window-title { color: rgba(255,255,255,0.5); }
+.window-text {
+  font-size: 22px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.85);
+}
+.window-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #e85d04;
+}
+
+/* Slide-specific positioning adjustments */
+.slide-1 .content { padding-top: 260px; }
+.slide-5 .content { padding-top: 280px; }
+
+/* Decorative orange bookmark for CTA slide */
+.bookmark {
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  width: 24px;
+  height: 48px;
+  background: #e85d04;
+  border-radius: 0 0 4px 4px;
+  z-index: 2;
+}
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: THE NEWS -->
+<div class="page slide-1" data-document-role="page" data-label="Slide 1: The News">
+  <div class="dot dot-cyan" style="width:8px;height:8px;top:400px;right:350px;"></div>
+  <div class="dot dot-orange" style="width:6px;height:6px;top:300px;left:200px;"></div>
+  <div class="dot dot-white" style="width:4px;height:4px;top:500px;right:200px;"></div>
+  <div class="dot dot-cyan" style="width:5px;height:5px;top:700px;left:300px;"></div>
+  <div class="dot dot-orange" style="width:7px;height:7px;top:900px;right:400px;"></div>
+  <div class="corner-line corner-top-right"></div>
+  <div class="corner-line corner-bottom-right"></div>
+  <div class="badge">Sourcing Tech</div>
+  <div class="date">2026年.06月</div>
+  <div class="content">
+    <div class="headline">
+      Kimi just plugged<br>into China's<br><span class="accent-line">biggest business<br>database</span>.
+    </div>
+    <div class="body-text">
+      <span class="highlight">Tianyancha × Kimi</span> = factory verification in <span class="highlight-orange">90 seconds</span>. This changes everything for LATAM importers.
+    </div>
+  </div>
+  <div class="footer">
+    <div class="author-box">
+      <div class="author-avatar">A</div>
+      <span class="author-name">Alex Montalvo</span>
+      <span class="author-url">biancotech.io</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:20%;"></div></div>
+  <div class="page-number">1/5</div>
+</div>
+
+<!-- SLIDE 2: WHAT TIANYANCHA REVEALS -->
+<div class="page" data-document-role="page" data-label="Slide 2: What Tianyancha Reveals">
+  <div class="dot dot-cyan" style="width:6px;height:6px;top:250px;right:300px;"></div>
+  <div class="dot dot-orange" style="width:8px;height:8px;top:450px;left:150px;"></div>
+  <div class="dot dot-white" style="width:5px;height:5px;top:650px;right:250px;"></div>
+  <div class="dot dot-cyan" style="width:4px;height:4px;top:850px;left:400px;"></div>
+  <div class="dot dot-orange" style="width:6px;height:6px;top:350px;right:500px;"></div>
+  <div class="corner-line corner-top-right"></div>
+  <div class="corner-line corner-bottom-right"></div>
+  <div class="corner-line corner-top-left"></div>
+  <div class="badge">Sourcing Tech</div>
+  <div class="date">2026年.06月</div>
+  <div class="content">
+    <div class="headline-small">
+      What <span class="accent-line">Tianyancha</span><br>reveals in<br>one query:
+    </div>
+    <ul class="data-list">
+      <li>Registration date & status</li>
+      <li>Litigation history</li>
+      <li>Ownership web & shareholding</li>
+      <li>Operating status</li>
+      <li>Registered capital</li>
+      <li>Annual reports</li>
+    </ul>
+  </div>
+  <div class="footer">
+    <div class="author-box">
+      <div class="author-avatar">A</div>
+      <span class="author-name">Alex Montalvo</span>
+      <span class="author-url">biancotech.io</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:40%;"></div></div>
+  <div class="page-number">2/5</div>
+</div>
+
+<!-- SLIDE 3: OLD WAY VS NEW WAY -->
+<div class="page" data-document-role="page" data-label="Slide 3: Old Way vs New Way">
+  <div class="dot dot-cyan" style="width:7px;height:7px;top:300px;right:350px;"></div>
+  <div class="dot dot-orange" style="width:5px;height:5px;top:500px;left:250px;"></div>
+  <div class="dot dot-white" style="width:6px;height:6px;top:700px;right:200px;"></div>
+  <div class="dot dot-cyan" style="width:4px;height:4px;top:400px;left:350px;"></div>
+  <div class="dot dot-orange" style="width:8px;height:8px;top:800px;right:450px;"></div>
+  <div class="corner-line corner-top-right"></div>
+  <div class="corner-line corner-bottom-right"></div>
+  <div class="badge">Sourcing Tech</div>
+  <div class="date">2026年.06月</div>
+  <div class="content">
+    <div class="headline-small" style="font-size:56px;">
+      <span class="accent-line">Old way</span> vs.<br><span style="color:#00ced1;">New way</span>
+    </div>
+    <div class="timeline">
+      <div class="timeline-old">
+        <div class="timeline-label">Old Way</div>
+        <div class="timeline-value">4 days</div>
+        <div style="font-size:16px;color:rgba(255,255,255,0.5);margin-top:8px;">Back-and-forth emails, PDFs, blind trust</div>
+      </div>
+      <div class="timeline-arrow">→</div>
+      <div class="timeline-new">
+        <div class="timeline-label">New Way</div>
+        <div class="timeline-value timeline-value-new">90 sec</div>
+        <div style="font-size:16px;color:rgba(0,206,209,0.7);margin-top:8px;">One prompt. Full factory profile.</div>
+      </div>
+    </div>
+    <div class="body-text-sm" style="margin-top:30px;">
+      What used to take a week of detective work now happens in a single chat. <span class="highlight">The buyer who knows this wins.</span>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="author-box">
+      <div class="author-avatar">A</div>
+      <span class="author-name">Alex Montalvo</span>
+      <span class="author-url">biancotech.io</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:60%;"></div></div>
+  <div class="page-number">3/5</div>
+</div>
+
+<!-- SLIDE 4: THE ASYMMETRY WINDOW -->
+<div class="page" data-document-role="page" data-label="Slide 4: The Asymmetry Window">
+  <div class="dot dot-cyan" style="width:6px;height:6px;top:280px;right:320px;"></div>
+  <div class="dot dot-orange" style="width:7px;height:7px;top:480px;left:180px;"></div>
+  <div class="dot dot-white" style="width:5px;height:5px;top:680px;right:280px;"></div>
+  <div class="dot dot-cyan" style="width:4px;height:4px;top:380px;left:320px;"></div>
+  <div class="dot dot-orange" style="width:6px;height:6px;top:880px;right:380px;"></div>
+  <div class="corner-line corner-top-right"></div>
+  <div class="corner-line corner-bottom-right"></div>
+  <div class="corner-line corner-top-left"></div>
+  <div class="badge">Sourcing Tech</div>
+  <div class="date">2026年.06月</div>
+  <div class="content">
+    <div class="headline-small" style="font-size:52px;">
+      The <span class="accent-line">3-6 month</span><br>asymmetry<br>window
+    </div>
+    <div class="window-box">
+      <div class="window-item window-now">
+        <div class="window-title">Now — China</div>
+        <div class="window-text">Buyers verify factories instantly with AI + Tianyancha</div>
+      </div>
+      <div class="window-arrow">→</div>
+      <div class="window-item window-later">
+        <div class="window-title">Q3-Q4 — LATAM</div>
+        <div class="window-text">Most importers still waiting for email replies</div>
+      </div>
+    </div>
+    <div class="body-text-sm" style="margin-top:30px;">
+      While Chinese buyers run <span class="highlight">90-second checks</span>, LATAM importers are still building spreadsheets. The gap is your opportunity — or your risk.
+    </div>
+  </div>
+  <div class="footer">
+    <div class="author-box">
+      <div class="author-avatar">A</div>
+      <span class="author-name">Alex Montalvo</span>
+      <span class="author-url">biancotech.io</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:80%;"></div></div>
+  <div class="page-number">4/5</div>
+</div>
+
+<!-- SLIDE 5: CTA -->
+<div class="page slide-5" data-document-role="page" data-label="Slide 5: CTA">
+  <div class="dot dot-cyan" style="width:8px;height:8px;top:320px;right:300px;"></div>
+  <div class="dot dot-orange" style="width:6px;height:6px;top:520px;left:200px;"></div>
+  <div class="dot dot-white" style="width:5px;height:5px;top:720px;right:250px;"></div>
+  <div class="dot dot-cyan" style="width:4px;height:4px;top:420px;left:300px;"></div>
+  <div class="dot dot-orange" style="width:7px;height:7px;top:620px;right:400px;"></div>
+  <div class="corner-line corner-top-right"></div>
+  <div class="corner-line corner-bottom-right"></div>
+  <div class="bookmark"></div>
+  <div class="badge">Sourcing Tech</div>
+  <div class="date">2026年.06月</div>
+  <div class="content">
+    <div class="cta-big">
+      Are you still<br>asking factories<br>for <span class="accent-line">PDFs</span>?
+    </div>
+    <div class="cta-sub">
+      Every day you wait, your competitors<br>get sharper. Every PDF you request,<br>someone else already has the answer.
+    </div>
+    <div class="cta-url">biancotech.io</div>
+  </div>
+  <div class="footer">
+    <div class="author-box">
+      <div class="author-avatar">A</div>
+      <span class="author-name">Alex Montalvo</span>
+      <span class="author-url">biancotech.io</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+  <div class="page-number">5/5</div>
+</div>
+
+</body>
+</html>
